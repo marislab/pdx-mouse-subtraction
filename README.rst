@@ -7,7 +7,7 @@ PDX Mouse Subtraction Pipeline
 :authors: Komal Rathi
 :contact: rathik@email.chop.edu
 :organization: DBHi, CHOP
-:status: Completed
+:status: Work in progress
 :date: |date|
 
 .. meta::
