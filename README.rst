@@ -67,11 +67,14 @@ BCM-specific scripts and software:
     4. ERCCPlot.jar
     5. RnaSeqLimsData.pl
 
-Steps
-=====
-
 Steps to run the pipeline:
+==========================
 
-1. Setup RNASeq_STAR.csv. Add paths to required tools, scripts and reference files.
-2. 
+1. Create config file (see config.yaml)
+2. Use the command below to run the pipeline:
+
+.. code-block:: bash
+
+	source activate pdx-subtract-env
+	snakemake -p -j 16 --nolock --snakefile Snakefile_phase1
 
