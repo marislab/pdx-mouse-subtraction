@@ -59,7 +59,7 @@ Prepare reference fasta and gtf:
 BCM-specific scripts and software:
 ==================================
 
-.. .. code-block:: bash
+.. code-block:: bash
 
     1. call_htseq.sh
     2. run-defuse.sh
