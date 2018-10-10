@@ -15,7 +15,6 @@ rule all:
 		expand(config['dirs']['outdirs']['pindeldir'] + "{file}" + "/", file = SAMPLES)
 		
 
-
 # soapfuse
 rule run_soapfuse:
 	input:
@@ -60,6 +59,33 @@ rule run_defuse:
 		"""
 		mkdir -p {params.defusedir}
 		cd {params.defusedir} && {params.defuse} {input.fq1} {input.fq2}
+		"""
+
+# star genome
+rule star_hg19_genome:
+	input:
+		genomefile = config['data']['ref']['genomefile']
+	output:
+		genomedir = config['data']['ref']['genomedir'],
+		genomedir_index = config['data']['ref']['genomedir'] + "/" + "SAindex"
+	log:
+		out = config['dirs']['logdir'] + "star_hg19_genome.log",
+		err = config['dirs']['logdir'] + "star_hg19_genome.err"
+	params:
+		star = config['tools']['star']
+	threads: 4
+	shell:
+		"""
+		{params.star} \
+		--runmode genomeGenerate \
+		--genomeDir {output.genomedir} \
+		--runThreadN 4 \
+		--genomeFastaFiles {input.genomefile} \
+		--genomeSAindexNbases 14 \
+		--genomeChrBinNbits 18 \
+		--genomeSAsparseD 1 \
+		--sjdbOverhang 100 \
+		--sjdbFileChrStartEnd - 2> {log.err} 1> {log.out}
 		"""
 
 # star
