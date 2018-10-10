@@ -4,7 +4,7 @@
 # only these would need to be changed if you have the same child directory structure
 envdir: /mnt/isilon/cbmi/variome/rathik/tools/miniconda3/envs/pdx-subtract-env
 rootdir: /mnt/isilon/maris_lab/target_nbl_ngs/PPTC-PDX-genomics/mouse_subtraction_pipeline
-mytmpdir: /tmp/rathik
+mytmpdir: /mnt/isilon/maris_lab/target_nbl_ngs/PPTC-PDX-genomics/mouse_subtraction_pipeline/tmpdir
 ################################
 
 samples: $rootdir/rna-hybrid/metadata/samples.txt
@@ -19,7 +19,7 @@ tools:
   bwa: $envdir/bin/bwa
   samtools: $envdir/bin/samtools
   sambamba: $envdir/bin/sambamba
-  picard: $envdir/share/picard-2.18.11-0
+  picard: $envdir/share/picard-2.18.14-0
   cufflinks: $envdir/bin/cufflinks
   rnaseqQC: $envdir/share/rna-seqc-1.1.8-0/RNA-SeQC_v1.1.8.jar
   alignstats: $envdir/bin/alignstats
@@ -41,7 +41,7 @@ data:
     mm10_fasta: $rootdir/data/ref/mm10/mm10.fa.fai
     genomefile: $rootdir/data/ref/hg19_genome/Homo_sapiens.GRCh37.71.hap.ERCC.sm.fa
     genomedir: $rootdir/data/star_genomes/hg19_genome
-    genomedir_hybrid: $rootdir/data/star_genomes/mm10_hg19
+    genomedir_hybrid: $rootdir/data/star_genomes/mm10_hg19/
     genomefile_hybrid: $rootdir/data/ref/mm10_hg19/hg19_mm10.fa
     hg19_mm10_fasta: $rootdir/data/ref/mm10_hg19/hg19_mm10.fa.fai
   annotation:
@@ -49,12 +49,13 @@ data:
     gtf: $rootdir/data/gtf/Homo_sapiens.GRCh37.71.hap.ERCC.gtf
     gtf_htseq: $rootdir/data/gtf/Homo_sapiens.GRCh37.71.hap.gene_name.gtf
 dirs:
+  logdir: $rootdir/rna-hybrid/results/logs/
   tmpdir: $mytmpdir
   fastqdir: $rootdir/data/fastq/
   outdirs:
     bamhybrid: $rootdir/rna-hybrid/results/bam/
     starhybrid: $rootdir/rna-hybrid/results/star/
-    alignstatshybrid: $rootdir/rna-hybrid/results/alignstats/
+    alignstatsdir: $rootdir/rna-hybrid/results/alignstats/
     realign: $rootdir/rna-hybrid/results/realign/
     realignstats: $rootdir/rna-hybrid/results/realignstats/
     bwaalign: $rootdir/rna-hybrid/results/bwa/
