@@ -32,6 +32,7 @@ Installation
 	conda install -c bioconda picard
 	conda install -c bioconda cufflinks
 	conda install -c bioconda rna-seqc
+	conda install -c bioconda htseq
 	conda install -c bioconda star
 	conda install -c bioconda star-fusion
 	conda install -c bioconda bwa
