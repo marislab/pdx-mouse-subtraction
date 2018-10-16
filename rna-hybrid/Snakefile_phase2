@@ -1,4 +1,7 @@
+from util.varsub import varsub
+
 configfile: "config.yaml"
+varsub(config)
 
 shell.prefix("source ~/.bash_profile")
 
@@ -8,11 +11,13 @@ with open(config['samples']) as f:
 
 rule all:
 	input:
+		config['data']['ref']['genomedir'] + "/" + "SAindex",
 		expand(config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}.bam.bai", file = SAMPLES),
+		expand(config['dirs']['outdirs']['htseqdir'] + "{file}_star_hybrid.counts", file = SAMPLES),
 		expand(config['dirs']['outdirs']['rnaseqcdir'] + "{file}" + "/", file = SAMPLES),
-		expand(config['dirs']['outdirs']['cufflinksdir'] + "{file}" + "/", file = SAMPLES),
-		expand(config['dirs']['outdirs']['bwaalign'] + "{file}" + "/" + "{file}_transcript.bam.bai",file = SAMPLES),
-		expand(config['dirs']['outdirs']['pindeldir'] + "{file}" + "/", file = SAMPLES)
+		expand(config['dirs']['outdirs']['cufflinksdir'] + "{file}" + "/" + "genes.fpkm_tracking", file = SAMPLES)
+		# expand(config['dirs']['outdirs']['bwaalign'] + "{file}" + "/" + "{file}_transcript.bam.bai",file = SAMPLES),
+		# expand(config['dirs']['outdirs']['pindeldir'] + "{file}" + "/", file = SAMPLES)
 		
 
 # soapfuse
@@ -61,6 +66,7 @@ rule run_defuse:
 		cd {params.defusedir} && {params.defuse} {input.fq1} {input.fq2}
 		"""
 
+# --sjdbFileChrStartEnd - removed this parameter and replaced with --sjdbGTFfile {params.gtf}
 # star genome
 rule star_hg19_genome:
 	input:
@@ -72,40 +78,49 @@ rule star_hg19_genome:
 		out = config['dirs']['logdir'] + "star_hg19_genome.log",
 		err = config['dirs']['logdir'] + "star_hg19_genome.err"
 	params:
-		star = config['tools']['star']
+		star = config['tools']['star'],
+		gtf = config['data']['annotation']['gtf']
 	threads: 4
 	shell:
 		"""
+		mkdir -p {output.genomedir}
+
 		{params.star} \
-		--runmode genomeGenerate \
+		--runMode genomeGenerate \
 		--genomeDir {output.genomedir} \
+		--outFileNamePrefix {output.genomedir} \
 		--runThreadN 4 \
 		--genomeFastaFiles {input.genomefile} \
-		--genomeSAindexNbases 14 \
-		--genomeChrBinNbits 18 \
-		--genomeSAsparseD 1 \
 		--sjdbOverhang 100 \
-		--sjdbFileChrStartEnd - 2> {log.err} 1> {log.out}
+		--sjdbGTFfile {params.gtf} 2> {log.err} 1> {log.out}
 		"""
 
 # star
 rule star_realign:
 	input:
 		fq1 = config['dirs']['outdirs']['bamhybrid'] + "{file}" + "/" + "{file}_hybrid_hg19_1_sequence.txt.bz2",
-		fq2 = config['dirs']['outdirs']['bamhybrid'] + "{file}" + "/" + "{file}_hybrid_hg19_2_sequence.txt.bz2"
+		fq2 = config['dirs']['outdirs']['bamhybrid'] + "{file}" + "/" + "{file}_hybrid_hg19_2_sequence.txt.bz2",
+		genomedir = config['data']['ref']['genomedir'],
+		genomedir_index = config['data']['ref']['genomedir'] + "/" + "SAindex"
 	output:
 		bam = temp(config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}_star.bam")
+	log:
+		out = config['dirs']['logdir'] + "{file}" + "_star_realign.log",
+		err = config['dirs']['logdir'] + "{file}" + "_star_realign.err"
 	params:
-		genomedir = config['data']['ref']['genomedir'],
+		star = config['tools']['star'],
 		samtools = config['tools']['samtools'],
-		realign = config['dirs']['outdirs']['realign'] + "{file}" + "/"
+		genomedir = config['data']['ref']['genomedir'],
+		realign = config['dirs']['outdirs']['realign'] + "{file}" + "/",
+		outprefix = config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}_"
 	threads: 4
 	shell:
 		"""
 		mkdir -p {params.realign}
 
-		${star} \
+		{params.star} \
 		--genomeDir {params.genomedir} \
+		--outFileNamePrefix {params.outprefix} \
 		--readFilesIn {input.fq1} {input.fq2} \
 		--readFilesCommand "bzcat" \
 		--chimSegmentMin 18 \
@@ -117,10 +132,19 @@ rule star_realign:
 		--alignIntronMax 200000 \
 		--outSAMstrandField intronMotif \
 		--outStd SAM \
-		--outSAMunmapped Within | {params.samtools} view - -b -S -o {output.bam}
+		--outSAMunmapped Within | {params.samtools} view - -b -S -o {output.bam} 2> {log.err} 1> {log.out}
 		"""
 
-# star fusion command missing because of some questions
+# star fusion command missing because of some questions 
+# rule star_fusion:
+# 	input:
+# 	output:
+# 	log:
+# 	params:
+# 	threads:
+# 	shell:
+# 		"""
+# 		"""
 
 # add or replace read groups 
 rule addreadgroups:
@@ -128,6 +152,9 @@ rule addreadgroups:
 		bam = config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}_star.bam"
 	output:
 		bam = temp(config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}_star.sorted.bam")
+	log:
+		out = config['dirs']['logdir'] + "{file}" + "_addreadgroups.log",
+		err = config['dirs']['logdir'] + "{file}" + "_addreadgroups.err"
 	params:
 		java = config['binaries']['java'],
 		picard = config['tools']['picard'],
@@ -140,9 +167,10 @@ rule addreadgroups:
 		"""
 		{params.java} \
 		-Xmx22G \
-		-jar {params.picard}/AddOrReplaceReadGroups.jar \
+		-jar {params.picard}/picard.jar AddOrReplaceReadGroups \
 		INPUT={input.bam} OUTPUT={output.bam} \
-		SORT_ORDER=coordinate RGID="{params.sample}" \
+		SORT_ORDER=coordinate \
+		RGID="{params.sample}" \
 		RGLB="{params.library}" \
 		RGPL="Illumina" \
 		RGSM="{params.sample}" \
@@ -150,7 +178,7 @@ rule addreadgroups:
 		RGPU="{params.puid}" \
 		TMP_DIR={params.tmpdir} \
 		MAX_RECORDS_IN_RAM=3000000 \
-		VALIDATION_STRINGENCY=SILENT
+		VALIDATION_STRINGENCY=SILENT 2> {log.err} 1> {log.out}
 		"""
 
 # reorder sam file
@@ -159,6 +187,9 @@ rule reordersam:
 		bam = config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}_star.sorted.bam"
 	output:
 		bam = temp(config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}_duplicates.bam")
+	log:
+		out = config['dirs']['logdir'] + "{file}" + "_reordersam.log",
+		err = config['dirs']['logdir'] + "{file}" + "_reordersam.err"
 	params:
 		java = config['binaries']['java'],
 		picard = config['tools']['picard'],
@@ -174,7 +205,7 @@ rule reordersam:
 		REFERENCE={params.genomefile} \
 		TMP_DIR={params.tmpdir} \
 		MAX_RECORDS_IN_RAM=3000000 \
-		VALIDATION_STRINGENCY=SILENT
+		VALIDATION_STRINGENCY=SILENT 2> {log.err} 1> {log.out}
 		"""
 
 # mark duplicates
@@ -184,6 +215,9 @@ rule markdups:
 	output:
 		bam = config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}.bam",
 		stats = config['dirs']['outdirs']['realignstats'] + "{file}" + "/" + "{file}_metrics.txt"
+	log:
+		out = config['dirs']['logdir'] + "{file}" + "_markdups.log",
+		err = config['dirs']['logdir'] + "{file}" + "_markdups.err"
 	params:
 		realignstats = config['dirs']['outdirs']['realignstats'] + "{file}" + "/",
 		java = config['binaries']['java'],
@@ -201,7 +235,7 @@ rule markdups:
 		AS=true M={output.stats} \
 		TMP_DIR={params.tmpdir} \
 		MAX_RECORDS_IN_RAM=3000000 \
-		VALIDATION_STRINGENCY=SILENT
+		VALIDATION_STRINGENCY=SILENT 2> {log.err} 1> {log.out}
 		"""
 
 # index bamfile
@@ -210,12 +244,15 @@ rule indexbam:
 		bam = config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}.bam"
 	output:
 		bai = config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}.bam.bai"
+	log:
+		out = config['dirs']['logdir'] + "{file}" + "_indexbam.log",
+		err = config['dirs']['logdir'] + "{file}" + "_indexbam.err"
 	params:
 		samtools = config['tools']['samtools']
 	threads: 2
 	shell:
 		"""
-		{params.samtools} index {input.bam}
+		{params.samtools} index {input.bam} 2> {log.err} 1> {log.out}
 		"""
 
 # htseq
@@ -223,13 +260,21 @@ rule htseq:
 	input:
 		bam = config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}.bam"
 	output:
+		counts = config['dirs']['outdirs']['htseqdir'] + "{file}_star_hybrid.counts"
+	log:
+		out = config['dirs']['logdir'] + "{file}" + "_htseq.log",
+		err = config['dirs']['logdir'] + "{file}" + "_htseq.err"
 	params:
-		htseq = config['tools']['htseq'],
-		gtf_htseq = config['data']['annotation']['gtf_htseq']
+		callhtseq = config['tools']['callhtseq'],
+		gtf_htseq = config['data']['annotation']['gtf_htseq'],
+		tmpdir = config['mytmpdir'],
+		htseqdir = config['dirs']['outdirs']['htseqdir']
 	threads: 2
 	shell:
 		"""
-		{params.htseq} {input.bam} {params.gtf_htseq}
+		mkdir -p {params.htseqdir}
+		
+		{params.callhtseq} {input.bam} {params.gtf_htseq} {output.counts} {params.tmpdir} 2> {log.err} 1> {log.out}
 		"""
 
 # qcmetrics
@@ -239,6 +284,9 @@ rule qcmetrics:
 	output:
 		rnaseqcdir = config['dirs']['outdirs']['rnaseqcdir'] + "{file}" + "/",
 		txt = config['dirs']['outdirs']['rnaseqcdir'] + "{file}" + "/" + "{file}_sample_file.txt"
+	log:
+		out = config['dirs']['logdir'] + "{file}" + "_qcmetrics.log",
+		err = config['dirs']['logdir'] + "{file}" + "_qcmetrics.err"
 	params:
 		sample = "{file}",
 		rnaseqcdir = config['dirs']['outdirs']['rnaseqcdir'],
@@ -254,7 +302,11 @@ rule qcmetrics:
 		echo -e "Sample ID\tBam File\tNotes" > {output.txt} 
 		echo -e "{params.sample}\t{input.bam}\tRNA-Seq-stats" >> {output.txt}
 
-		{params.java} -Xmx5g -jar {params.rnaseqQC} -s {output.txt} -t {params.gtf} -r {params.genomefile} -o {output.rnaseqcdir}
+		{params.java} \
+		-Xmx5g \
+		-jar {params.rnaseqQC} \
+		-s {output.txt} \
+		-t {params.gtf} -r {params.genomefile} -o {output.rnaseqcdir} 2> {log.err} 1> {log.out}
 		"""
 
 # cufflinks
@@ -262,7 +314,11 @@ rule cufflinks:
 	input:
 		bam = config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}.bam"
 	output:
-		cufflinksdir = config['dirs']['outdirs']['cufflinksdir'] + "{file}" + "/"
+		cufflinksdir = config['dirs']['outdirs']['cufflinksdir'] + "{file}" + "/",
+		cufflinks_out = config['dirs']['outdirs']['cufflinksdir'] + "{file}" + "/" + "genes.fpkm_tracking"
+	log:
+		out = config['dirs']['logdir'] + "{file}" + "_cufflinks.log",
+		err = config['dirs']['logdir'] + "{file}" + "_cufflinks.err"
 	params:
 		cufflinksdir = config['dirs']['outdirs']['cufflinksdir'],
 		cufflinks = config['tools']['cufflinks'],
@@ -272,7 +328,10 @@ rule cufflinks:
 		"""
 		mkdir -p {params.cufflinksdir}
 
-		{params.cufflinks} -G {params.gtf} {input.bam} -q -o {output.cufflinksdir} -p 4 --no-update-check
+		{params.cufflinks} \
+		-G {params.gtf} {input.bam} \
+		-q -o {output.cufflinksdir} \
+		-p 4 --no-update-check 2> {log.err} 1> {log.out}
 		"""
 
 # bwa_mem
@@ -316,7 +375,7 @@ rule bwa_mem_addreadgroups:
 		"""
 		{params.java} \
 		-Xmx22G \
-		-jar {params.picard}/AddOrReplaceReadGroups.jar \
+		-jar {params.picard}/picard.jar AddOrReplaceReadGroups \
 		INPUT={input.bam} OUTPUT={output.bam} \
 		SORT_ORDER=coordinate \
 		RGID="{params.sample}" \

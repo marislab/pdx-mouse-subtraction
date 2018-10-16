@@ -32,7 +32,8 @@ rule star_genome:
 		out = config['dirs']['logdir'] + "star_genome.log",
 		err = config['dirs']['logdir'] + "star_genome.err"
 	params:
-		star = config['tools']['star']
+		star = config['tools']['star'],
+		gtf_hybrid = config['data']['annotation']['gtf_hybrid']
 	threads: 4
 	shell:
 		"""
@@ -44,11 +45,8 @@ rule star_genome:
 		--outFileNamePrefix {output.genomedir_hybrid} \
 		--runThreadN 4 \
 		--genomeFastaFiles {input.genomefile_hybrid} \
-		--genomeSAindexNbases 14 \
-		--genomeChrBinNbits 18 \
-		--genomeSAsparseD 1 \
-		--sjdbOverhang 0 \
-		--sjdbFileChrStartEnd - 2> {log.err} 1> {log.out}
+		--sjdbOverhang 100 \
+		--sjdbGTFfile {params.gtf_hybrid} 2> {log.err} 1> {log.out}
 		"""
 
 # STAR
@@ -428,18 +426,15 @@ rule bam2fastq:
 # compress fastqs
 rule compressfastq:
 	input:
-		fq1 = config['dirs']['outdirs']['bamhybrid'] + "{file}" + "/" + "{file}_hybrid_hg19_1_sequence.txt",
-		fq2 = config['dirs']['outdirs']['bamhybrid'] + "{file}" + "/" + "{file}_hybrid_hg19_2_sequence.txt"
+		fq = config['dirs']['outdirs']['bamhybrid'] + "{file}" + "/" + "{file}_hybrid_hg19_{rep}_sequence.txt"
 	output:
-		fq1 = config['dirs']['outdirs']['bamhybrid'] + "{file}" + "/" + "{file}_hybrid_hg19_1_sequence.txt.bz2",
-		fq2 = config['dirs']['outdirs']['bamhybrid'] + "{file}" + "/" + "{file}_hybrid_hg19_2_sequence.txt.bz2"
+		fq = config['dirs']['outdirs']['bamhybrid'] + "{file}" + "/" + "{file}_hybrid_hg19_{rep}_sequence.txt.bz2",
 	params:
 		bzip2 = config['binaries']['bzip2']
 	threads: 2
 	shell:
 		"""
-		{params.bzip2} {input.fq1}
-		{params.bzip2} {input.fq1}
+		{params.bzip2} {input.fq}
 		"""
 
 
