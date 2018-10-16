@@ -24,7 +24,7 @@ tools:
   rnaseqQC: $envdir/share/rna-seqc-1.1.8-0/RNA-SeQC_v1.1.8.jar
   alignstats: $envdir/bin/alignstats
   soapfuse: $rootdir/scripts/SOAPfuse-v1.26
-  htseq: $rootdir/scripts/Htseq/call_htseq.sh
+  callhtseq: $rootdir/scripts/Htseq/call_htseq_v2.sh
   defuse: $rootdir/scripts/Defuse/run-defuse.sh
   ERCCPlot: $rootdir/scripts/ERCCQC_1.0/ERCCPlot.jar
   limsData: $rootdir/scripts/ERCCQC_1.0/RnaSeqLimsData.pl
@@ -40,7 +40,7 @@ data:
     hg19_fasta: $rootdir/data/ref/hg19/hg19.fa.fai
     mm10_fasta: $rootdir/data/ref/mm10/mm10.fa.fai
     genomefile: $rootdir/data/ref/hg19_genome/Homo_sapiens.GRCh37.71.hap.ERCC.sm.fa
-    genomedir: $rootdir/data/star_genomes/hg19_genome
+    genomedir: $rootdir/data/star_genomes/hg19_genome/
     genomedir_hybrid: $rootdir/data/star_genomes/mm10_hg19/
     genomefile_hybrid: $rootdir/data/ref/mm10_hg19/hg19_mm10.fa
     hg19_mm10_fasta: $rootdir/data/ref/mm10_hg19/hg19_mm10.fa.fai
@@ -54,10 +54,10 @@ dirs:
   fastqdir: $rootdir/data/fastq/
   outdirs:
     bamhybrid: $rootdir/rna-hybrid/results/bam/
-    starhybrid: $rootdir/rna-hybrid/results/star/
     alignstatsdir: $rootdir/rna-hybrid/results/alignstats/
     realign: $rootdir/rna-hybrid/results/realign/
     realignstats: $rootdir/rna-hybrid/results/realignstats/
+    htseqdir: $rootdir/rna-hybrid/results/htseq/
     bwaalign: $rootdir/rna-hybrid/results/bwa/
     bwaalignstats: $rootdir/rna-hybrid/results/bwaalignstats/
     defusedir: $rootdir/rna-hybrid/results/defuse/
