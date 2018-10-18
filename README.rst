@@ -54,8 +54,11 @@ Prepare reference fasta and gtf:
 
 .. code-block:: bash
 
-	# Code to prepare reference fasta and gtf (But as a backup I have all those reference files from Maria as well):
+	# Code to prepare reference fasta and gtf (this might be inaccurate because I got the reference files from BCM):
 	bash scripts/generate_ref.sh
+
+	# make sure all fasta files are indexed using: 
+	samtools faidx <file.fasta|file.fa>
 
 BCM-specific scripts and software:
 ==================================
