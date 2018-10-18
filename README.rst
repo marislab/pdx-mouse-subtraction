@@ -31,6 +31,7 @@ Installation
 	conda install -c bioconda sambamba
 	conda install -c bioconda picard
 	conda install -c bioconda cufflinks
+	conda install -c anaconda java-1.7.0-openjdk-cos6-x86_64 # required by rna-seqc
 	conda install -c bioconda rna-seqc
 	conda install -c bioconda htseq
 	conda install -c bioconda star
