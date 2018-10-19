@@ -17,6 +17,7 @@ rule all:
 		expand(config['dirs']['outdirs']['htseqdir'] + "{file}_star_hybrid.counts", file = SAMPLES),
 		expand(config['dirs']['outdirs']['cufflinksdir'] + "{file}" + "/" + "genes.fpkm_tracking", file = SAMPLES),
 		expand(config['dirs']['outdirs']['rnaseqcdir'] + "{file}" + "/" + "metrics.tsv", file = SAMPLES),
+		config['data']['ref']['transcripts_dictfiledir'] + "protein_coding_canonical.T_chr.fa.dict",
 		expand(config['dirs']['outdirs']['bwaalign'] + "{file}" + "/" + "{file}_transcript.bam.bai",file = SAMPLES)
 		# expand(config['dirs']['outdirs']['pindeldir'] + "{file}" + "/", file = SAMPLES)
 		
@@ -417,10 +418,31 @@ rule bwa_mem_addreadgroups:
 		VALIDATION_STRINGENCY=SILENT 2> {log.err} 1> {log.out}
 		"""
 
+# create sequence dictionary
+rule bwa_sequence_dict:
+	input:
+		transcripts = config['data']['ref']['transcripts']
+	output:
+		transcripts_dictfiledir = config['data']['ref']['transcripts_dictfiledir'] + "protein_coding_canonical.T_chr.fa.dict"
+	log:
+		out = config['dirs']['logdir'] + "bwa_sequence_dict.log",
+		err = config['dirs']['logdir'] + "bwa_sequence_dict.err"
+	params:
+		java = config['binaries']['java'],
+		picard = config['tools']['picard']
+	threads: 2
+	shell:
+		"""
+		{params.java} -Xmx4g -jar {params.picard}/picard.jar CreateSequenceDictionary \
+		R={input.transcripts} \
+		O={output.transcripts_dictfiledir} 2> {log.err} 1> {log.out}
+		"""
+
 # reorder sam file
 rule bwa_mem_reordersam:
 	input:
-		bam = config['dirs']['outdirs']['bwaalign'] + "{file}" + "/" + "{file}_bwa.sorted.bam"
+		bam = config['dirs']['outdirs']['bwaalign'] + "{file}" + "/" + "{file}_bwa.sorted.bam",
+		transcripts_dictfiledir = config['data']['ref']['transcripts_dictfiledir'] + "protein_coding_canonical.T_chr.fa.dict"
 	output:
 		bam = temp(config['dirs']['outdirs']['bwaalign'] + "{file}" + "/" + "{file}_duplicates_bwa.bam")
 	log:
@@ -430,7 +452,7 @@ rule bwa_mem_reordersam:
 		java = config['binaries']['java'],
 		picard = config['tools']['picard'],
 		tmpdir = config['dirs']['tmpdir'],
-		genomefile = config['data']['ref']['genomefile']
+		transcripts = config['data']['ref']['transcripts']
 	threads: 2
 	shell:
 		"""
@@ -438,7 +460,7 @@ rule bwa_mem_reordersam:
 		-Xmx4g \
 		-jar {params.picard}/picard.jar ReorderSam \
 		I={input.bam} O={output.bam} \
-		REFERENCE={params.genomefile} \
+		REFERENCE={params.transcripts} \
 		TMP_DIR={params.tmpdir} \
 		MAX_RECORDS_IN_RAM=3000000 \
 		VALIDATION_STRINGENCY=SILENT 2> {log.err} 1> {log.out}
