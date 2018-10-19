@@ -38,6 +38,7 @@ data:
   ref:
     ERCCConc: $rootdir/data/ERCC92/ERCC_conc.tsv
     transcripts: $rootdir/data/ref/transcripts/protein_coding_canonical.T_chr.fa
+    transcripts_dictfiledir: $rootdir/data/ref/transcripts/
     transcripts_index: $rootdir/data/ref/transcripts/protein_coding_canonical.T_chr.fa.fai
     hg19_fasta: $rootdir/data/ref/hg19/hg19.fa.fai
     mm10_fasta: $rootdir/data/ref/mm10/mm10.fa.fai
