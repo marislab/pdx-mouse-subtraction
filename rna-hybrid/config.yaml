@@ -9,10 +9,11 @@ mytmpdir: /mnt/isilon/maris_lab/target_nbl_ngs/PPTC-PDX-genomics/mouse_subtracti
 
 samples: $rootdir/rna-hybrid/metadata/samples.txt
 binaries:
-  java: /usr/bin/java
+  java: java
+  java_rnaseqc: $envdir/x86_64-conda_cos6-linux-gnu/sysroot/usr/lib/jvm/java-1.7.0-openjdk-1.7.0.131.x86_64/jre/bin/java
   perl: /usr/bin/perl
   ruby: /usr/bin/ruby
-  bzip2: /usr/bin/bzip2
+  bzip2: $envdir/bin/bzip2
 tools:
   star: $envdir/bin/STAR
   starfusion: $envdir/bin/STAR-Fusion
@@ -37,13 +38,16 @@ data:
   ref:
     ERCCConc: $rootdir/data/ERCC92/ERCC_conc.tsv
     transcripts: $rootdir/data/ref/transcripts/protein_coding_canonical.T_chr.fa
+    transcripts_index: $rootdir/data/ref/transcripts/protein_coding_canonical.T_chr.fa.fai
     hg19_fasta: $rootdir/data/ref/hg19/hg19.fa.fai
     mm10_fasta: $rootdir/data/ref/mm10/mm10.fa.fai
+    dictfiledir: $rootdir/data/ref/hg19_genome/
     genomefile: $rootdir/data/ref/hg19_genome/Homo_sapiens.GRCh37.71.hap.ERCC.sm.fa
+    genomefile_index: $rootdir/data/ref/hg19_genome/Homo_sapiens.GRCh37.71.hap.ERCC.sm.fa.fai
     genomedir: $rootdir/data/star_genomes/hg19_genome/
     genomedir_hybrid: $rootdir/data/star_genomes/mm10_hg19/
     genomefile_hybrid: $rootdir/data/ref/mm10_hg19/hg19_mm10.fa
-    hg19_mm10_fasta: $rootdir/data/ref/mm10_hg19/hg19_mm10.fa.fai
+    genomefile_hybrid_index: $rootdir/data/ref/mm10_hg19/hg19_mm10.fa.fai
   annotation:
     gtf_hybrid: $rootdir/data/gtf/hg19_mm10.gtf
     gtf: $rootdir/data/gtf/Homo_sapiens.GRCh37.71.hap.ERCC.gtf
