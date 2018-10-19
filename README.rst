@@ -58,8 +58,11 @@ Prepare reference fasta and gtf:
 	# Code to prepare reference fasta and gtf (this might be inaccurate because I got the reference files from BCM):
 	bash scripts/generate_ref.sh
 
-	# make sure all fasta files are indexed using: 
+	# make sure all reference fasta files are indexed: 
 	samtools faidx <file.fasta|file.fa>
+
+	# make sure the fasta reference used by bwa is indexed:
+	bwa index protein_coding_canonical.T_chr.fa
 
 BCM-specific scripts and software:
 ==================================
