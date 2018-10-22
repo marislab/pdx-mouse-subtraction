@@ -50,6 +50,7 @@ Installation
 	wget http://public.genomics.org.cn/BGI/soap/SOAPfuse/hg19-GRCh37.59.for.SOAPfuse.tar.gz
 	
 	# update soapfuse config file according to http://soap.genomics.org.cn/soapfuse.html
+	# add cytoBand file from ucsc
 	wget http://hgdownload.cse.ucsc.edu/goldenpath/hg19/database/cytoBand.txt.gz hg19-GRCh37.59/
 	gunzip cytoBand.txt.gz
 
