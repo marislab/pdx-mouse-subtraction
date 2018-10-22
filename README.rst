@@ -28,6 +28,7 @@ Installation
 	conda create --name pdx-subtract-env
 	conda activate pdx-subtract-env
 	conda install -c bioconda samtools
+	conda install -c bioconda htslib
 	conda install -c bioconda sambamba
 	conda install -c bioconda picard
 	conda install -c bioconda cufflinks
@@ -49,6 +50,8 @@ Installation
 	wget http://public.genomics.org.cn/BGI/soap/SOAPfuse/hg19-GRCh37.59.for.SOAPfuse.tar.gz
 	
 	# update soapfuse config file according to http://soap.genomics.org.cn/soapfuse.html
+	wget http://hgdownload.cse.ucsc.edu/goldenpath/hg19/database/cytoBand.txt.gz hg19-GRCh37.59/
+	gunzip cytoBand.txt.gz
 
 Prepare reference fasta and gtf:
 ================================
