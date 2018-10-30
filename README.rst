@@ -35,24 +35,37 @@ Installation
 	conda install -c anaconda java-1.7.0-openjdk-cos6-x86_64 # required by rna-seqc
 	conda install -c bioconda rna-seqc
 	conda install -c bioconda htseq
-	conda install -c bioconda star
-	conda install -c bioconda star-fusion
+	conda install -c bioconda star=2.5.3a
+	conda install -c bioconda trinity=2.5.1 # required by star-fusion
+	conda install -c bioconda star-fusion=1.1.0
 	conda install -c bioconda bwa
 	conda install -c bioconda alignstats
 
-	# soapfuse has to be installed separately
-	# not available on conda
+SOAPfuse
+========
+
+.. code-block:: bash
+
+	# SOAPfuse has to be installed separately as it is not available on conda
 	wget https://sourceforge.net/projects/soapfuse/files/SOAPfuse_Package/SOAPfuse-v1.26.tar.gz
 	tar -xzf SOAPfuse-v1.26.tar.gz
 	cd SOAPfuse-v1.26
 
-	# get soapfuse database
+	# get SOAPfuse database
 	wget http://public.genomics.org.cn/BGI/soap/SOAPfuse/hg19-GRCh37.59.for.SOAPfuse.tar.gz
 	
-	# update soapfuse config file according to http://soap.genomics.org.cn/soapfuse.html
-	# add cytoBand file from ucsc
+	# update SOAPfuse config file according to http://soap.genomics.org.cn/soapfuse.html
+	# add cytoBand file from ucsc and update SOAPfuse config
 	wget http://hgdownload.cse.ucsc.edu/goldenpath/hg19/database/cytoBand.txt.gz hg19-GRCh37.59/
 	gunzip cytoBand.txt.gz
+
+STAR-Fusion
+===========
+
+.. code-block:: bash
+
+	# for STAR-Fusion, python 2 is required so create a separate environment
+	https://github.research.chop.edu/rathik/star-fusion-detection-pipeline
 
 Prepare reference fasta and gtf:
 ================================
