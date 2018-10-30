@@ -40,6 +40,8 @@ Installation
 	conda install -c bioconda star-fusion=1.1.0
 	conda install -c bioconda bwa
 	conda install -c bioconda alignstats
+	conda config --add channels https://conda.anaconda.org/dranew
+	conda install defuse
 
 SOAPfuse
 ========
@@ -52,6 +54,7 @@ SOAPfuse
 	cd SOAPfuse-v1.26
 
 	# get SOAPfuse database
+	cd /mnt/isilon/cbmi/variome/reference/soapfuse_db
 	wget http://public.genomics.org.cn/BGI/soap/SOAPfuse/hg19-GRCh37.59.for.SOAPfuse.tar.gz
 	
 	# update SOAPfuse config file according to http://soap.genomics.org.cn/soapfuse.html
@@ -66,6 +69,16 @@ STAR-Fusion
 
 	# for STAR-Fusion, python 2 is required so create a separate environment
 	https://github.research.chop.edu/rathik/star-fusion-detection-pipeline
+
+deFUSE
+======
+
+.. code-block:: bash
+
+	# for deFUSE, python 2 is required so create a separate environment
+	# change perl in defuse_create_ref.pl to /usr/bin/env perl
+	# download deFUSE reference database
+	defuse_create_ref.pl -d /mnt/isilon/cbmi/variome/reference/defuse_db/hg19/
 
 Prepare reference fasta and gtf:
 ================================
