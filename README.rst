@@ -62,6 +62,8 @@ SOAPfuse
 	wget http://hgdownload.cse.ucsc.edu/goldenpath/hg19/database/cytoBand.txt.gz hg19-GRCh37.59/
 	gunzip cytoBand.txt.gz
 
+	# change PA_all_fq_postfix in config file to .fq
+
 STAR-Fusion
 ===========
 
@@ -79,6 +81,19 @@ deFUSE
 	# change perl in defuse_create_ref.pl to /usr/bin/env perl
 	# download deFUSE reference database
 	defuse_create_ref.pl -d /mnt/isilon/cbmi/variome/reference/defuse_db/hg19/
+
+	# or install via source:
+	wget https://bitbucket.org/dranew/defuse/get/0f198c242b82.zip
+	unzip 0f198c242b82.zip
+	
+	# in the tools directory, download boost
+	cd tools
+	wget https://dl.bintray.com/boostorg/release/1.68.0/source/boost_1_68_0.tar.gz
+	tar -zxvf boost_1_68_0.tar.gz
+	export CPLUS_INCLUDE_PATH=/mnt/isilon/maris_lab/target_nbl_ngs/PPTC-PDX-genomics/mouse_subtraction_pipeline/scripts/dranew-defuse-0f198c242b82/tools/boost_1_68_0
+
+	# do this in the tools directory
+	make
 
 Prepare reference fasta and gtf:
 ================================
