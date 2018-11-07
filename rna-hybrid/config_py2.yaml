@@ -1,0 +1,31 @@
+
+################################
+# this config is for python2.7 dependent programs
+# top level directories
+# only these would need to be changed if you have the same child directory structure
+envdir: /mnt/isilon/cbmi/variome/rathik/tools/miniconda3/envs/star-fusion-env
+rootdir: /mnt/isilon/maris_lab/target_nbl_ngs/PPTC-PDX-genomics/mouse_subtraction_pipeline
+refdir: /mnt/isilon/cbmi/variome/reference
+mytmpdir: /mnt/isilon/maris_lab/target_nbl_ngs/PPTC-PDX-genomics/mouse_subtraction_pipeline/tmpdir
+################################
+
+samples: $rootdir/rna-hybrid/metadata/samples.txt
+binaries:
+  bunzip2: $envdir/bin/bunzip2
+tools:
+  star: $envdir/bin/STAR
+  starfusion: $envdir/bin/STAR-Fusion
+  trinity: $envdir/opt/trinity-2.5.1
+  defuse: $envdir/bin/defuse_run.pl
+data:
+  ref:
+    stargenomedir: $refdir/star_fusion_db/hg19/GRCh37_gencode_v19_CTAT_lib_July192017/ctat_genome_lib_build_dir
+    defuse_config: $envdir/opt/defuse/scripts/config.txt
+    defuse_refdir: $refdir/defuse_db/hg19
+dirs:
+  logdir: $rootdir/rna-hybrid/results/logs/
+  outdirs:
+    bamhybrid: $rootdir/rna-hybrid/results/bam/
+    starfusiondir: $rootdir/rna-hybrid/results/starfusion/
+    defusedir: $rootdir/rna-hybrid/results/defuse/
+

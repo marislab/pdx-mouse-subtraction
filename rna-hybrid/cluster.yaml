@@ -1,0 +1,4 @@
+run_defuse:
+  h_vmem: 20G
+  mem_free: 16G
+  m_mem_free: 16G

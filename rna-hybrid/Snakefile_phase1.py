@@ -434,7 +434,7 @@ rule compressfastq:
 	threads: 2
 	shell:
 		"""
-		{params.bzip2} {input.fq}
+		{params.bzip2} -c {input.fq} > {output.fq}
 		"""
 
 

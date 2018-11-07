@@ -5,6 +5,8 @@ varsub(config)
 
 shell.prefix("source ~/.bash_profile")
 
+# os.environ['LD_LIBRARY_PATH'] = config['ld_path']
+
 with open(config['samples']) as f:
 	SAMPLES = f.read().splitlines()
 	print(SAMPLES)
@@ -18,8 +20,8 @@ rule all:
 		expand(config['dirs']['outdirs']['cufflinksdir'] + "{file}" + "/" + "genes.fpkm_tracking", file = SAMPLES),
 		expand(config['dirs']['outdirs']['rnaseqcdir'] + "{file}" + "/" + "metrics.tsv", file = SAMPLES),
 		config['data']['ref']['transcripts_dictfiledir'] + "protein_coding_canonical.T_chr.fa.dict",
-		expand(config['dirs']['outdirs']['bwaalign'] + "{file}" + "/" + "{file}_transcript.bam.bai",file = SAMPLES)
-		# expand(config['dirs']['outdirs']['pindeldir'] + "{file}" + "/", file = SAMPLES)
+		expand(config['dirs']['outdirs']['bwaalign'] + "{file}" + "/" + "{file}_transcript.bam.bai",file = SAMPLES),
+		expand(config['dirs']['outdirs']['pindeldir'] + "{file}" + "/", file = SAMPLES)
 		
 
 # soapfuse
