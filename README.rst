@@ -22,9 +22,10 @@ The goal of this repo is to make the Mouse subtraction pipeline from BCM (Wheele
 Installation
 ============
 
+1. Create python3 environment:
+
 .. code-block:: bash
 
-	# for all publicly available tools 
 	conda create --name pdx-subtract-env
 	conda activate pdx-subtract-env
 	conda install -c bioconda samtools
@@ -42,6 +43,25 @@ Installation
 	conda install -c bioconda alignstats
 	conda config --add channels https://conda.anaconda.org/dranew
 	conda install defuse
+
+2. Create python2 environment (STAR-Fusion v1.0.1 is python 2.7 compatible):
+
+.. code-block:: bash
+
+	conda create --name star-fusion-env python=2.7
+	source activate star-fusion-env
+	conda install -c bioconda star-fusion
+	conda install -c bioconda trinity
+	conda install -c conda-forge -c bioconda samtools bzip2
+	conda install -c conda-forge configparser
+
+	# install some non-standard perl modules:
+	perl -MCPAN -e shell
+	install DB_File
+	install URI::Escape
+	install Set::IntervalTree
+	install Carp::Assert
+	install JSON::XS
 
 SOAPfuse
 ========
@@ -64,36 +84,26 @@ SOAPfuse
 
 	# change PA_all_fq_postfix in config file to .fq
 
-STAR-Fusion
-===========
-
-.. code-block:: bash
-
-	# for STAR-Fusion, python 2 is required so create a separate environment
-	https://github.research.chop.edu/rathik/star-fusion-detection-pipeline
-
 deFUSE
 ======
 
 .. code-block:: bash
 
-	# for deFUSE, python 2 is required so create a separate environment
-	# change perl in defuse_create_ref.pl to /usr/bin/env perl
-	# download deFUSE reference database
-	defuse_create_ref.pl -d /mnt/isilon/cbmi/variome/reference/defuse_db/hg19/
+	# for deFUSE, python 2 is required so use the python2 environment created for STAR-Fusion
 
-	# or install via source:
+	# Install via source:
 	wget https://bitbucket.org/dranew/defuse/get/0f198c242b82.zip
 	unzip 0f198c242b82.zip
 	
 	# in the tools directory, download boost
-	cd tools
-	wget https://dl.bintray.com/boostorg/release/1.68.0/source/boost_1_68_0.tar.gz
+	cd tools && wget https://dl.bintray.com/boostorg/release/1.68.0/source/boost_1_68_0.tar.gz
 	tar -zxvf boost_1_68_0.tar.gz
 	export CPLUS_INCLUDE_PATH=/mnt/isilon/maris_lab/target_nbl_ngs/PPTC-PDX-genomics/mouse_subtraction_pipeline/scripts/dranew-defuse-0f198c242b82/tools/boost_1_68_0
+	cd tools && make
 
-	# do this in the tools directory
-	make
+	# download deFUSE reference database
+	# change perl in defuse_create_ref.pl to /usr/bin/env perl
+	defuse_create_ref.pl -d /mnt/isilon/cbmi/variome/reference/defuse_db/hg19/
 
 Prepare reference fasta and gtf:
 ================================
@@ -114,20 +124,36 @@ BCM-specific scripts and software:
 
 .. code-block:: bash
 
-    1. call_htseq.sh
-    2. run-defuse.sh
-    3. pindel_0.2.5b5_tdonly
-    4. ERCCPlot.jar
-    5. RnaSeqLimsData.pl
+    1. pindel_0.2.5b5_tdonly
+    2. ERCCPlot.jar
+    3. RnaSeqLimsData.pl
 
 Steps to run the pipeline:
 ==========================
 
-1. Create config file (see config.yaml)
-2. Use the command below to run the pipeline:
+The Snakemake pipeline is divided into four steps:
+
+1. Snakefile_Phase1: Align PDX RNA-seq data to hybrid genome, split into human and mouse bams and create human specific fastq files.
+2. Snakefile_Phase2: Realign to human reference, do QC, run htseq and pindel. 
+3. Snakefile_fusions_py2: Run python2 dependent fusion callers like STAR-Fusion and deFUSE 
+4. Snakefile_soapfuse: Run python3 dependent fusion caller like SOAPfuse
+
+Each snakefile has a corresponding bash script to run the pipeline:
 
 .. code-block:: bash
+	
+	# Run phase 1
+	bash run_phase1.sh
 
-	source activate pdx-subtract-env
-	snakemake -p -j 16 --nolock --snakefile Snakefile_phase1
+	# Run phase 2
+	bash run_phase2.sh
+
+	# Run python2 based fusion callers
+	bash run_fusions_py2.sh
+
+	# Run python3 based fusion callers
+	bash run_soapfuse.sh
+
+
+	
 

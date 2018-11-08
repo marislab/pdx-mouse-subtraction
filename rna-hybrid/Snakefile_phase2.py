@@ -22,55 +22,8 @@ rule all:
 		config['data']['ref']['transcripts_dictfiledir'] + "protein_coding_canonical.T_chr.fa.dict",
 		expand(config['dirs']['outdirs']['bwaalign'] + "{file}" + "/" + "{file}_transcript.bam.bai",file = SAMPLES),
 		expand(config['dirs']['outdirs']['pindeldir'] + "{file}" + "/", file = SAMPLES)
-		
 
-# soapfuse
-rule run_soapfuse:
-	input:
-		sample = "{file}",
-		fq1 = config['dirs']['outdirs']['bamhybrid'] + "{file}" + "/" + "{file}_hybrid_hg19_1_sequence.txt.bz2",
-		fq2 = config['dirs']['outdirs']['bamhybrid'] + "{file}" + "/" + "{file}_hybrid_hg19_2_sequence.txt.bz2"
-	output:
-		fq1 = temp(config['dirs']['outdirs']['soapfusedir'] + "{file}" + "/" + "{file}_1.txt.bz2"),
-		fq2 = temp(config['dirs']['outdirs']['soapfusedir'] + "{file}" + "/" + "{file}_2.txt.bz2"),
-		slist = temp(config['dirs']['outdirs']['soapfusedir'] + "{file}" + "/" + "{file}_sampleList.txt")
-	params:
-		soapfusedir = config['dirs']['outdirs']['soapfusedir'] + "{file}" + "/",
-		library = "fastq",
-		perl = config['binaries']['perl'],
-		soapfuse = config['tools']['soapfuse']
-	threads: 4
-	shell:
-		"""
-		mkdir -p {params.soapfusedir}
 
-		ln -s {input.fq1} {output.fq1}
-		ln -s {input.fq2} {output.fq2}
-		echo "{input.sample} {params.library} {input.sample} 101" > {output.slist}
-
-		{params.perl} {params.soapfuse}/SOAPfuse-RUN.pl \
-		-c {params.soapfuse}/config/config.txt \
-		-fd {params.soapfusedir} \
-		-l {output.slist} \
-		-o {params.soapfusedir}
-		"""
-
-# defuse
-rule run_defuse:
-	input:
-		fq1 = config['dirs']['outdirs']['bamhybrid'] + "{file}" + "/" + "{file}_hybrid_hg19_1_sequence.txt.bz2",
-		fq2 = config['dirs']['outdirs']['bamhybrid'] + "{file}" + "/" + "{file}_hybrid_hg19_2_sequence.txt.bz2"
-	params:
-		defusedir = config['dirs']['outdirs']['defusedir'] + "{file}" + "/",
-		defuse = config['tools']['defuse']
-	threads: 4
-	shell:
-		"""
-		mkdir -p {params.defusedir}
-		cd {params.defusedir} && {params.defuse} {input.fq1} {input.fq2}
-		"""
-
-# --sjdbFileChrStartEnd - removed this parameter and replaced with --sjdbGTFfile {params.gtf}
 # star genome
 rule star_hg19_genome:
 	input:
@@ -138,17 +91,6 @@ rule star_realign:
 		--outStd SAM \
 		--outSAMunmapped Within | {params.samtools} view - -b -S -o {output.bam} 2> {log.err} 1> {log.out}
 		"""
-
-# star fusion command missing because of some questions 
-# rule star_fusion:
-# 	input:
-# 	output:
-# 	log:
-# 	params:
-# 	threads:
-# 	shell:
-# 		"""
-# 		"""
 
 # add or replace read groups 
 rule addreadgroups:
