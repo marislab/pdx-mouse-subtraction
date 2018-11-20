@@ -43,6 +43,7 @@ Installation
 	conda install -c bioconda alignstats
 	conda config --add channels https://conda.anaconda.org/dranew
 	conda install defuse
+	conda install -c bioconda bamutil
 
 2. Create python2 environment (STAR-Fusion v1.0.1 is python 2.7 compatible):
 
@@ -104,6 +105,16 @@ deFUSE
 	# download deFUSE reference database
 	# change perl in defuse_create_ref.pl to /usr/bin/env perl
 	defuse_create_ref.pl -d /mnt/isilon/cbmi/variome/reference/defuse_db/hg19/
+
+GATK
+====
+
+.. code-block:: bash
+	
+	# get reference files
+	wget ftp://gsapubftp-anonymous@ftp.broadinstitute.org/bundle/b37/1000G_phase1.indels.b37.vcf.gz
+	wget ftp://gsapubftp-anonymous@ftp.broadinstitute.org/bundle/b37/Mills_and_1000G_gold_standard.indels.b37.vcf.gz
+	wget ftp://gsapubftp-anonymous@ftp.broadinstitute.org/bundle/b37/dbsnp_138.b37.vcf.gz
 
 Prepare reference fasta and gtf:
 ================================
