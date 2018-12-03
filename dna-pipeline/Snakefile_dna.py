@@ -22,7 +22,7 @@ rule all:
 # convert to fastq
 rule bam2fastq:
 	input:
-		bam = config['dirs']['outdirs']['dna_bamdir'] + "{file}" + "/" + "{file}.bam"
+		bam = config['dirs']['outdirs']['dna_bamdir'] + "{file}" + "/" + "{file}-PDX.bam"
 	output:
 		fq1 = temp(config['dirs']['outdirs']['dna_fastqdir'] + "{file}" + "/" + "{file}_1.fastq"),
 		fq2 = temp(config['dirs']['outdirs']['dna_fastqdir'] + "{file}" + "/" + "{file}_2.fastq")
@@ -73,6 +73,7 @@ rule bwa_sampe:
 		sample = '{file}',
 		bwa = config['tools']['bwa'],
 		samtools = config['tools']['samtools'],
+		sambamba = config['tools']['sambamba'],
 		genomefile_hybrid = config['data']['ref']['genomefile_hybrid'],
 		tmpdir = config['dirs']['tmpdir']
 	threads: 2
