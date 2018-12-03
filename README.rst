@@ -139,10 +139,10 @@ BCM-specific scripts and software:
     2. ERCCPlot.jar
     3. RnaSeqLimsData.pl
 
-Steps to run the pipeline:
-==========================
+Steps to run the RNA-pipeline:
+==============================
 
-The Snakemake pipeline is divided into four steps:
+The RNA pipeline is divided into four steps:
 
 1. Snakefile_Phase1: Align PDX RNA-seq data to hybrid genome, split into human and mouse bams and create human specific fastq files.
 2. Snakefile_Phase2: Realign to human reference, do QC, run htseq and pindel. 
@@ -154,17 +154,24 @@ Each snakefile has a corresponding bash script to run the pipeline:
 .. code-block:: bash
 	
 	# Run phase 1
-	bash run_phase1.sh
+	cd rna-hybrid && bash run_phase1.sh
 
 	# Run phase 2
-	bash run_phase2.sh
+	cd rna-hybrid && bash run_phase2.sh
 
 	# Run python2 based fusion callers
-	bash run_fusions_py2.sh
+	cd rna-hybrid && bash run_fusions_py2.sh
 
 	# Run python3 based fusion callers
-	bash run_soapfuse.sh
+	cd rna-hybrid && bash run_soapfuse.sh
 
 
+Steps to run the DNA-pipeline:
+==============================
+
+.. code-block:: bash
 	
+	cd dna-pipeline && bash run_dna.sh
+
+
 
