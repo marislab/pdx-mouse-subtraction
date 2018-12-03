@@ -35,7 +35,7 @@ dirs:
   logdir: $rootdir/dna-pipeline/results/logs/
   tmpdir: $mytmpdir
   outdirs:
-    dna_bamdir: $rootdir/dna-pipeline/results/bam/
+    dna_bamdir: $rootdir/data/dna-bam/
     dna_fastqdir: $rootdir/dna-pipeline/results/fastq/
     realign: $rootdir/dna-pipeline/results/realign/
     realignstatsdir: $rootdir/dna-pipeline/results/realignstats/
