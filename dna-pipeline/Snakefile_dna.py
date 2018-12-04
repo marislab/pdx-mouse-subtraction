@@ -11,6 +11,7 @@ with open(config['samples']) as f:
 
 rule all:
 	input:
+		config['data']['ref']['genomefile_hybrid'] + ".sa",
 		expand(config['dirs']['outdirs']['realignstatsdir'] + "{file}" + "/" + "{file}_hybrid_alignstats.txt", file = SAMPLES),
 		expand(config['dirs']['outdirs']['realign'] + "{file}.hybrid_hg19.bam.bai", file = SAMPLES),
 		expand(config['dirs']['outdirs']['realignstatsdir'] + "{file}" + "/" + "{file}_hybrid_hg19_alignstats.txt", file = SAMPLES),
@@ -38,6 +39,22 @@ rule bam2fastq:
 		{params.java} -Xmx4g -jar {params.picard}/picard.jar SamToFastq \
 		VALIDATION_STRINGENCY=LENIENT \
 		INPUT={input.bam} FASTQ={output.fq1} SECOND_END_FASTQ={output.fq2} 2> {log.err} 1> {log.out}
+		"""
+
+rule bwa_index:
+	input:
+		genomefile_hybrid = config['data']['ref']['genomefile_hybrid']
+	output:
+		genomefile_hybrid = config['data']['ref']['genomefile_hybrid'] + ".sa"
+	log:
+		out = config['dirs']['logdir'] + "_bwa_index.log",
+		err = config['dirs']['logdir'] + "_bwa_index.err"
+	params:
+		bwa = config['tools']['bwa']
+	threads: 2
+	shell:
+		"""
+		{params.bwa} index {input.genomefile_hybrid} 2> {log.err} 1> {log.out}
 		"""
 
 # align each fastq separately
