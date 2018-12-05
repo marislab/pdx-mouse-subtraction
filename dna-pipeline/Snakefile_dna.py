@@ -11,6 +11,7 @@ with open(config['samples']) as f:
 
 rule all:
 	input:
+		# expand(config['dirs']['outdirs']['realign'] + "{file}.tmp.bam", file = SAMPLES)
 		config['data']['ref']['genomefile_hybrid'] + ".sa",
 		expand(config['dirs']['outdirs']['realignstatsdir'] + "{file}" + "/" + "{file}_hybrid_alignstats.txt", file = SAMPLES),
 		expand(config['dirs']['outdirs']['realign'] + "{file}.hybrid_hg19.bam.bai", file = SAMPLES),
@@ -96,10 +97,10 @@ rule bwa_sampe:
 	threads: 2
 	shell:
 		"""
-		{params.bwa} sampe -P -r '@RG\tID:0\tSM:{params.sample}\tPL:Illumina' \
+		{params.bwa} sampe -P -r '@RG\\tID:0\\tSM:{params.sample}\\tPL:Illumina' \
 		{params.genomefile_hybrid} {input.sai1} {input.sai2} {input.fq1} {input.fq2} | \
 		{params.samtools} view -F 256 -bu - | {params.samtools} fixmate - - | \
-		{params.sambamba} sort -l 1 -t 8 --tmpdir {params.tmpdir} -o {output.bam} 2> {log.err} 1> {log.out}
+		{params.sambamba} sort -l 1 -t 8 --tmpdir {params.tmpdir} -o {output.bam} /dev/stdin 2> {log.err} 1> {log.out}
 		"""
 
 # sambamba
@@ -243,7 +244,7 @@ rule process_bam4:
 		"""
 		{params.samtools} view -F 256 -Sbh {input.bam} | \
 		{params.samtools} fixmate - - | \
-		{params.sambamba} sort -l 0 -t 8 --tmpdir {params.tmpdir} -o {output.bam} 2> {log.err} 1> {log.out}
+		{params.sambamba} sort -l 0 -t 8 --tmpdir {params.tmpdir} -o {output.bam} /dev/stdin 2> {log.err} 1> {log.out}
 		"""
 
 rule process_bam5:
@@ -394,7 +395,7 @@ rule process_bam13:
 	shell:
 		"""
 		{params.samtools} view -F 256 -Sbh {input.bam} | \
-		{params.samtools} fixmate - - | {params.sambamba} sort -l 0 -t 8 --tmpdir {params.tmpdir} -o {output.bam} 2> {log.err} 1> {log.out} 
+		{params.samtools} fixmate - - | {params.sambamba} sort -l 0 -t 8 --tmpdir {params.tmpdir} -o {output.bam} /dev/stdin 2> {log.err} 1> {log.out} 
 		"""
 
 rule process_bam14:
