@@ -26,7 +26,8 @@ data:
     mm10_bed: $rootdir/data/ref/mm10_hg19/mm10.bed
     vcrome_bed: $rootdir/data/capture_designs/HG19_vcrome2.1.bed
   ref:
-    hg19_fasta: $rootdir/data/ref/hg19/hg19.fa.fai
+    dictfile_dir: $rootdir/data/ref/hg19/
+    hg19_fasta: $rootdir/data/ref/hg19/hg19.fa
     mm10_fasta: $rootdir/data/ref/mm10/mm10.fa.fai
     genomefile_hybrid: $rootdir/data/ref/mm10_hg19/hg19_mm10.fa
     genomefile_hybrid_index: $rootdir/data/ref/mm10_hg19/hg19_mm10.fa.fai
