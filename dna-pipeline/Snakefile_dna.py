@@ -11,15 +11,17 @@ with open(config['samples']) as f:
 
 rule all:
 	input:
-		# expand(config['dirs']['outdirs']['realign'] + "{file}.tmp.bam", file = SAMPLES)
 		config['data']['ref']['genomefile_hybrid'] + ".sa",
+		expand(config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}_validate.txt", file = SAMPLES),
 		expand(config['dirs']['outdirs']['realignstatsdir'] + "{file}" + "/" + "{file}_hybrid_alignstats.txt", file = SAMPLES),
-		expand(config['dirs']['outdirs']['realign'] + "{file}.hybrid_hg19.bam.bai", file = SAMPLES),
+		expand(config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}.hybrid_hg19.bam.bai", file = SAMPLES),
 		expand(config['dirs']['outdirs']['realignstatsdir'] + "{file}" + "/" + "{file}_hybrid_hg19_alignstats.txt", file = SAMPLES),
-		expand(config['dirs']['outdirs']['realign'] + "{file}.hybrid_mm10.bam.bai", file = SAMPLES),
+		expand(config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}.hybrid_mm10.bam.bai", file = SAMPLES),
 		expand(config['dirs']['outdirs']['realignstatsdir'] + "{file}" + "/" + "{file}_hybrid_mm10_alignstats.txt", file = SAMPLES),
-		expand(config['dirs']['outdirs']['realign'] + "{file}.hybrid_hg19_mm10.bam.bai", file = SAMPLES),
-		expand(config['dirs']['outdirs']['realignstatsdir'] + "{file}" + "/" + "{file}_hybrid_hg19_mm10_alignstats.txt", file = SAMPLES)
+		expand(config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}.hybrid_hg19_mm10.bam.bai", file = SAMPLES),
+		expand(config['dirs']['outdirs']['realignstatsdir'] + "{file}" + "/" + "{file}_hybrid_hg19_mm10_alignstats.txt", file = SAMPLES),
+		config['data']['ref']['dictfile_dir'] + "hg19.dict",
+		expand(config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}.hybrid_hg19.realigned.recal.bam", file = SAMPLES)
 
 # convert to fastq
 rule bam2fastq:
@@ -83,7 +85,7 @@ rule bwa_sampe:
 		fq1 = config['dirs']['outdirs']['dna_fastqdir'] + "{file}" + "/" + "{file}_1.fastq",
 		fq2 = config['dirs']['outdirs']['dna_fastqdir'] + "{file}" + "/" + "{file}_2.fastq",
 	output:
-		bam = temp(config['dirs']['outdirs']['realign'] + "{file}.tmp.bam")
+		bam = temp(config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}.tmp.bam")
 	log:
 		out = config['dirs']['logdir'] + "{file}" + "_bwa_sampe.log",
 		err = config['dirs']['logdir'] + "{file}" + "_bwa_sampe.err"
@@ -106,9 +108,9 @@ rule bwa_sampe:
 # sambamba
 rule run_sambamba:
 	input:
-		bam = config['dirs']['outdirs']['realign'] + "{file}.tmp.bam"
+		bam = config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}.tmp.bam"
 	output:
-		bam = temp(config['dirs']['outdirs']['realign'] + "{file}.tmp.markdups.bam")
+		bam = config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}.tmp.markdups.bam"
 	log:
 		out = config['dirs']['logdir'] + "{file}" + "_run_sambamba.log",
 		err = config['dirs']['logdir'] + "{file}" + "_run_sambamba.err"
@@ -124,9 +126,9 @@ rule run_sambamba:
 # sambamba_index
 rule sambamba_index:
 	input:
-		bam = config['dirs']['outdirs']['realign'] + "{file}.tmp.markdups.bam"
+		bam = config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}.tmp.markdups.bam"
 	output:
-		bai = config['dirs']['outdirs']['realign'] + "{file}.tmp.markdups.bam.bai"
+		bai = config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}.tmp.markdups.bam.bai"
 	log:
 		out = config['dirs']['logdir'] + "{file}" + "_sambamba_index.log",
 		err = config['dirs']['logdir'] + "{file}" + "_sambamba_index.err"
@@ -141,23 +143,21 @@ rule sambamba_index:
 # validate bam
 rule bam_validate:
 	input:
-		bam = config['dirs']['outdirs']['realign'] + "{file}.tmp.markdups.bam"
+		bam = config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}.tmp.markdups.bam"
 	output:
-		txt = config['dirs']['outdirs']['realign'] + "{file}_validate.txt"
-	log:
-		err = config['dirs']['logdir'] + "{file}" + "_bam_validate.err"
+		txt = config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}_validate.txt"
 	params:
 		bamutil = config['tools']['bamutil']
 	threads: 2
 	shell:
 		"""
-		{params.bamutil} validate --in {input.bam} --verbose > {output.txt} 2> {log.err}
+		{params.bamutil} validate --in {input.bam} --verbose > {output.txt} 2> {output.txt}
 		"""
 
 # align stats
 rule realign_stats:
 	input:
-		bam = config['dirs']['outdirs']['realign'] + "{file}.tmp.markdups.bam"
+		bam = config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}.tmp.markdups.bam"
 	output:
 		realignstats = config['dirs']['outdirs']['realignstatsdir'] + "{file}" + "/" + "{file}_hybrid_alignstats.txt"
 	log:
@@ -177,15 +177,15 @@ rule realign_stats:
 
 rule process_bam1:
 	input:
-		bam = config['dirs']['outdirs']['realign'] + "{file}.tmp.markdups.bam"
+		bam = config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}.tmp.markdups.bam"
 	output:
-		bam = temp(config['dirs']['outdirs']['realign'] + "{file}.hg19_tmp.bam")
+		bam = temp(config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}.hg19_tmp.bam")
 	log:
 		err = config['dirs']['logdir'] + "{file}" + "_process_bam1.err"
 	params:
 		samtools = config['tools']['samtools'],
 		hg19_bed = config['data']['bed']['hg19_bed'],
-		hg19_fasta = config['data']['ref']['hg19_fasta']
+		hg19_fasta = config['data']['ref']['hg19_fasta'] + ".fai"
 	threads: 4
 	shell:
 		"""
@@ -195,10 +195,10 @@ rule process_bam1:
 
 rule process_bam2:
 	input:
-		bam1 = config['dirs']['outdirs']['realign'] + "{file}.tmp.markdups.bam",
-		bam2 = config['dirs']['outdirs']['realign'] + "{file}.hg19_tmp.bam"
+		bam1 = config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}.tmp.markdups.bam",
+		bam2 = config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}.hg19_tmp.bam"
 	output:
-		bam = temp(config['dirs']['outdirs']['realign'] + "{file}_header_correct_hg19.bam")
+		bam = temp(config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}_header_correct_hg19.bam")
 	log:
 		err = config['dirs']['logdir'] + "{file}" + "_process_bam2.err"
 	params:
@@ -212,9 +212,9 @@ rule process_bam2:
 
 rule process_bam3:
 	input:
-		bam = config['dirs']['outdirs']['realign'] + "{file}_header_correct_hg19.bam"
+		bam = config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}_header_correct_hg19.bam"
 	output:
-		bam = temp(config['dirs']['outdirs']['realign'] + "{file}_hg19_sorted_by_name.bam")
+		bam = temp(config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}_hg19_sorted_by_name.bam")
 	log:
 		out = config['dirs']['logdir'] + "{file}" + "_process_bam3.log",
 		err = config['dirs']['logdir'] + "{file}" + "_process_bam3.err"
@@ -229,9 +229,9 @@ rule process_bam3:
 
 rule process_bam4:
 	input:
-		bam = config['dirs']['outdirs']['realign'] + "{file}_hg19_sorted_by_name.bam"
+		bam = config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}_hg19_sorted_by_name.bam"
 	output:
-		bam = temp(config['dirs']['outdirs']['realign'] + "{file}_hg19_sorted.bam")
+		bam = temp(config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}_hg19_sorted.bam")
 	log:
 		out = config['dirs']['logdir'] + "{file}" + "_process_bam4.log",
 		err = config['dirs']['logdir'] + "{file}" + "_process_bam4.err"
@@ -249,9 +249,9 @@ rule process_bam4:
 
 rule process_bam5:
 	input:
-		bam = config['dirs']['outdirs']['realign'] + "{file}_hg19_sorted.bam"
+		bam = config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}_hg19_sorted.bam"
 	output:
-		bam = temp(config['dirs']['outdirs']['realign'] + "{file}.hybrid_unpaired_hg19.bam")
+		bam = config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}.hybrid_unpaired_hg19.bam"
 	log:
 		err = config['dirs']['logdir'] + "{file}" + "_process_bam5.err"
 	params:
@@ -264,9 +264,9 @@ rule process_bam5:
 
 rule process_bam6:
 	input:
-		bam = config['dirs']['outdirs']['realign'] + "{file}_hg19_sorted.bam"
+		bam = config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}_hg19_sorted.bam"
 	output:
-		bam = temp(config['dirs']['outdirs']['realign'] + "{file}.hybrid_paired_hg19.bam")
+		bam = temp(config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}.hybrid_paired_hg19.bam")
 	log:
 		err = config['dirs']['logdir'] + "{file}" + "_process_bam6.err"
 	params:
@@ -279,9 +279,9 @@ rule process_bam6:
 
 rule process_bam7:
 	input:
-		bam = config['dirs']['outdirs']['realign'] + "{file}.hybrid_paired_hg19.bam"
+		bam = config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}.hybrid_paired_hg19.bam"
 	output:
-		bam = temp(config['dirs']['outdirs']['realign'] + "{file}.hybrid_hg19.bam")
+		bam = temp(config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}.hybrid_hg19.bam")
 	log:
 		out = config['dirs']['logdir'] + "{file}" + "_process_bam7.log",
 		err = config['dirs']['logdir'] + "{file}" + "_process_bam7.err"
@@ -296,9 +296,9 @@ rule process_bam7:
 
 rule process_bam8:
 	input:
-		bam = config['dirs']['outdirs']['realign'] + "{file}.hybrid_hg19.bam"
+		bam = config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}.hybrid_hg19.bam"
 	output:
-		bam = config['dirs']['outdirs']['realign'] + "{file}.hybrid_hg19.bam.bai"
+		bam = config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}.hybrid_hg19.bam.bai"
 	log:
 		out = config['dirs']['logdir'] + "{file}" + "_process_bam8.log",
 		err = config['dirs']['logdir'] + "{file}" + "_process_bam8.err"
@@ -312,7 +312,7 @@ rule process_bam8:
 
 rule process_bam9:
 	input:
-		bam = config['dirs']['outdirs']['realign'] + "{file}.hybrid_hg19.bam"
+		bam = config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}.hybrid_hg19.bam"
 	output:
 		realignstats = config['dirs']['outdirs']['realignstatsdir'] + "{file}" + "/" + "{file}_hybrid_hg19_alignstats.txt"
 	log:
@@ -329,9 +329,9 @@ rule process_bam9:
 
 rule process_bam10:
 	input:
-		bam = config['dirs']['outdirs']['realign'] + "{file}.tmp.markdups.bam"
+		bam = config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}.tmp.markdups.bam"
 	output:
-		bam = temp(config['dirs']['outdirs']['realign'] + "{file}.mm10_tmp.bam")
+		bam = temp(config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}.mm10_tmp.bam")
 	log:
 		err = config['dirs']['logdir'] + "{file}" + "_process_bam10.err"
 	params:
@@ -347,10 +347,10 @@ rule process_bam10:
 
 rule process_bam11:
 	input:
-		bam1 = config['dirs']['outdirs']['realign'] + "{file}.tmp.markdups.bam",
-		bam2 = config['dirs']['outdirs']['realign'] + "{file}.mm10_tmp.bam"
+		bam1 = config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}.tmp.markdups.bam",
+		bam2 = config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}.mm10_tmp.bam"
 	output:
-		bam = temp(config['dirs']['outdirs']['realign'] + "{file}_header_correct_mm10.bam")
+		bam = temp(config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}_header_correct_mm10.bam")
 	log:
 		err = config['dirs']['logdir'] + "{file}" + "_process_bam11.err"
 	params:
@@ -364,9 +364,9 @@ rule process_bam11:
 
 rule process_bam12:
 	input:
-		bam = config['dirs']['outdirs']['realign'] + "{file}_header_correct_mm10.bam"
+		bam = config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}_header_correct_mm10.bam"
 	output:
-		bam = temp(config['dirs']['outdirs']['realign'] + "{file}_mm10_sorted_by_name.bam")
+		bam = temp(config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}_mm10_sorted_by_name.bam")
 	log:
 		out = config['dirs']['logdir'] + "{file}" + "_process_bam12.log",
 		err = config['dirs']['logdir'] + "{file}" + "_process_bam12.err"
@@ -381,9 +381,9 @@ rule process_bam12:
 
 rule process_bam13:
 	input:
-		bam = config['dirs']['outdirs']['realign'] + "{file}_mm10_sorted_by_name.bam"
+		bam = config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}_mm10_sorted_by_name.bam"
 	output:
-		bam = temp(config['dirs']['outdirs']['realign'] + "{file}_mm10_final.bam")
+		bam = temp(config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}_mm10_final.bam")
 	log:
 		out = config['dirs']['logdir'] + "{file}" + "_process_bam13.log",
 		err = config['dirs']['logdir'] + "{file}" + "_process_bam13.err"
@@ -400,9 +400,9 @@ rule process_bam13:
 
 rule process_bam14:
 	input:
-		bam = config['dirs']['outdirs']['realign'] + "{file}_mm10_final.bam"
+		bam = config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}_mm10_final.bam"
 	output:
-		bam = temp(config['dirs']['outdirs']['realign'] + "{file}.hybrid_mm10.bam")
+		bam = temp(config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}.hybrid_mm10.bam")
 	log:
 		out = config['dirs']['logdir'] + "{file}" + "_process_bam14.log",
 		err = config['dirs']['logdir'] + "{file}" + "_process_bam14.err"
@@ -417,9 +417,9 @@ rule process_bam14:
 
 rule process_bam15:
 	input:
-		bam = config['dirs']['outdirs']['realign'] + "{file}.hybrid_mm10.bam"
+		bam = config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}.hybrid_mm10.bam"
 	output:
-		bam = config['dirs']['outdirs']['realign'] + "{file}.hybrid_mm10.bam.bai"
+		bam = config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}.hybrid_mm10.bam.bai"
 	log:
 		out = config['dirs']['logdir'] + "{file}" + "_process_bam15.log",
 		err = config['dirs']['logdir'] + "{file}" + "_process_bam15.err"
@@ -433,7 +433,7 @@ rule process_bam15:
 
 rule process_bam16:
 	input:
-		bam = config['dirs']['outdirs']['realign'] + "{file}.hybrid_mm10.bam"
+		bam = config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}.hybrid_mm10.bam"
 	output:
 		realignstats = config['dirs']['outdirs']['realignstatsdir'] + "{file}" + "/" + "{file}_hybrid_mm10_alignstats.txt"
 	log:
@@ -450,9 +450,9 @@ rule process_bam16:
 
 rule process_bam17:
 	input:
-		bam = config['dirs']['outdirs']['realign'] + "{file}.tmp.markdups.bam"
+		bam = config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}.tmp.markdups.bam"
 	output:
-		bam = config['dirs']['outdirs']['realign'] + "{file}.hybrid_hg19_mm10.bam"
+		bam = config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}.hybrid_hg19_mm10.bam"
 	log:
 		out = config['dirs']['logdir'] + "{file}" + "_process_bam17.log",
 		err = config['dirs']['logdir'] + "{file}" + "_process_bam17.err"
@@ -463,14 +463,14 @@ rule process_bam17:
 	shell:
 		"""
 		{params.samtools} view {input.bam} | grep human | grep mouse | \
-		{params.samtools} view -bt {params.genomefile_hybrid_index} - > {output.bam} 2> {log.err} 1> {log.out} 
+		{params.samtools} view -bt {params.genomefile_hybrid_index} - > {output.bam} 2> {log.err} 
 		"""
 
 rule process_bam18:
 	input:
-		bam = config['dirs']['outdirs']['realign'] + "{file}.hybrid_hg19_mm10.bam"
+		bam = config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}.hybrid_hg19_mm10.bam"
 	output:
-		bam = config['dirs']['outdirs']['realign'] + "{file}.hybrid_hg19_mm10.bam.bai"
+		bam = config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}.hybrid_hg19_mm10.bam.bai"
 	log:
 		out = config['dirs']['logdir'] + "{file}" + "_process_bam18.log",
 		err = config['dirs']['logdir'] + "{file}" + "_process_bam18.err"
@@ -479,12 +479,12 @@ rule process_bam18:
 	threads: 2
 	shell:
 		"""
-		{params.samtools} index -t 8 {input.bam} 2> {log.err} 1> {log.out} 
+		{params.samtools} index -@ 8 {input.bam} 2> {log.err} 1> {log.out} 
 		"""
 
 rule process_bam19:
 	input:
-		bam = config['dirs']['outdirs']['realign'] + "{file}.hybrid_hg19_mm10.bam"
+		bam = config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}.hybrid_hg19_mm10.bam"
 	output:
 		realignstats = config['dirs']['outdirs']['realignstatsdir'] + "{file}" + "/" + "{file}_hybrid_hg19_mm10_alignstats.txt"
 	log:
@@ -499,11 +499,32 @@ rule process_bam19:
 		{params.alignstats} -v -i {input.bam} -o {output.realignstats} -t {params.vcrome_bed} -C -W 2> {log.err} 1> {log.out} 
 		"""
 
+# create sequence dictionary
+rule sequence_dict:
+	input:
+		hg19_fasta = config['data']['ref']['hg19_fasta']
+	output:
+		dict_file = config['data']['ref']['dictfile_dir'] + "hg19.dict"
+	log:
+		out = config['dirs']['logdir'] + "sequence_dict.log",
+		err = config['dirs']['logdir'] + "sequence_dict.err"
+	params:
+		java = config['binaries']['java'],
+		picard = config['tools']['picard']
+	threads: 2
+	shell:
+		"""
+		{params.java} -Xmx4g -jar {params.picard}/picard.jar CreateSequenceDictionary \
+		R={input.hg19_fasta} \
+		O={output.dict_file} 2> {log.err} 1> {log.out}
+		"""
+
 rule gatk_process1:
 	input:
-		bam = config['dirs']['outdirs']['realign'] + "{file}.hybrid_hg19.bam"
+		bam = config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}.hybrid_hg19.bam",
+		dict_file = config['data']['ref']['dictfile_dir'] + "hg19.dict"
 	output:
-		intervals = temp(config['dirs']['outdirs']['realign'] + "{file}.GATKrealign.intervals")
+		intervals = temp(config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}.GATKrealign.intervals")
 	log:
 		out = config['dirs']['logdir'] + "{file}" + "_gatk_RealignerTargetCreator.log",
 		err = config['dirs']['logdir'] + "{file}" + "_gatk_RealignerTargetCreator.err"
@@ -526,10 +547,10 @@ rule gatk_process1:
 
 rule gatk_process2:
 	input:
-		bam = config['dirs']['outdirs']['realign'] + "{file}.hybrid_hg19.bam",
-		intervals = config['dirs']['outdirs']['realign'] + "{file}.GATKrealign.intervals"
+		bam = config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}.hybrid_hg19.bam",
+		intervals = config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}.GATKrealign.intervals"
 	output:
-		bam = temp(config['dirs']['outdirs']['realign'] + "{file}.realigned.bam")
+		bam = temp(config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}.realigned.bam")
 	log:
 		out = config['dirs']['logdir'] + "{file}" + "_gatk_IndelRealigner.log",
 		err = config['dirs']['logdir'] + "{file}" + "_gatk_IndelRealigner.err"
@@ -554,9 +575,9 @@ rule gatk_process2:
 
 rule gatk_process3:
 	input:
-		bam = config['dirs']['outdirs']['realign'] + "{file}.realigned.bam"
+		bam = config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}.realigned.bam"
 	output:
-		grp = temp(config['dirs']['outdirs']['realign'] + "{file}.GATKrecal_data.grp")
+		grp = temp(config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}.GATKrecal_data.grp")
 	log:
 		out = config['dirs']['logdir'] + "{file}" + "_gatk_BaseRecalibrator.log",
 		err = config['dirs']['logdir'] + "{file}" + "_gatk_BaseRecalibrator.err"
@@ -572,7 +593,7 @@ rule gatk_process3:
 		-T BaseRecalibrator -I {input.bam} \
 		-R {params.hg19_fasta} \
 		-o {output.grp} -nct 4 --downsampling_type NONE \
-		-knownSites {params.gatk_ref}/dbsnp_142_b37.vcf.gz \
+		-knownSites {params.gatk_ref}/dbsnp_138.b37.vcf.gz \
 		-knownSites {params.gatk_ref}/1000G_phase1.indels.b37.vcf.gz \
 		-knownSites {params.gatk_ref}/Mills_and_1000G_gold_standard.indels.b37.vcf.gz \
 		-cov ReadGroupCovariate -cov QualityScoreCovariate \
@@ -581,10 +602,10 @@ rule gatk_process3:
 
 rule gatk_process4:
 	input:
-		bam = config['dirs']['outdirs']['realign'] + "{file}.realigned.bam",
-		grp = config['dirs']['outdirs']['realign'] + "{file}.GATKrecal_data.grp"
+		bam = config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}.realigned.bam",
+		grp = config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}.GATKrecal_data.grp"
 	output:
-		bam = config['dirs']['outdirs']['realign'] + "{file}.hybrid_hg19.realigned.recal.bam"
+		bam = config['dirs']['outdirs']['realign'] + "{file}" + "/" + "{file}.hybrid_hg19.realigned.recal.bam"
 	log:
 		out = config['dirs']['logdir'] + "{file}" + "_gatk_PrintReads.log",
 		err = config['dirs']['logdir'] + "{file}" + "_gatk_PrintReads.err"
