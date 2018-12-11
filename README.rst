@@ -111,10 +111,21 @@ GATK
 
 .. code-block:: bash
 	
-	# get reference files
+	# get reference files and prepare corresponding index files
 	wget ftp://gsapubftp-anonymous@ftp.broadinstitute.org/bundle/b37/1000G_phase1.indels.b37.vcf.gz
+	gunzip 1000G_phase1.indels.b37.vcf.gz
+	bgzip 1000G_phase1.indels.b37.vcf
+	tabix -p vcf 1000G_phase1.indels.b37.vcf.gz
+
 	wget ftp://gsapubftp-anonymous@ftp.broadinstitute.org/bundle/b37/Mills_and_1000G_gold_standard.indels.b37.vcf.gz
+	gunzip Mills_and_1000G_gold_standard.indels.b37.vcf.gz
+	bgzip Mills_and_1000G_gold_standard.indels.b37.vcf
+	tabix -p vcf 1000G_phase1.indels.b37.vcf.gz
+
 	wget ftp://gsapubftp-anonymous@ftp.broadinstitute.org/bundle/b37/dbsnp_138.b37.vcf.gz
+	gunzip dbsnp_138.b37.vcf.gz
+	bgzip dbsnp_138.b37.vcf
+	tabix -p vcf dbsnp_138.b37.vcf.gz
 
 Prepare reference fasta and gtf:
 ================================
