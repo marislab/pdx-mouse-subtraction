@@ -4,8 +4,8 @@
 PDX Mouse Subtraction Pipeline
 ******************************
 
-:authors: Oliver Hampton, Chase Miller, Liu Xi, Maria Cardenas and Komal Rathi
-:contact: Komal Rathi (rathik@email.chop.edu)
+:authors: Oliver Hampton, Chase Miller, Liu Xi, Maria Cardenas and Komal S. Rathi
+:contact: Komal S. Rathi (rathik@email.chop.edu)
 :organization: DBHi, CHOP
 :status: Completed
 :date: |date|
