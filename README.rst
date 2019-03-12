@@ -138,10 +138,10 @@ Download reference files:
 Prepare reference fasta and gtf:
 ================================
 
-.. code-block:: bash
-
 	~~# Code to prepare reference fasta and gtf (this might be inaccurate because I got the reference files from BCM):~~
 	~~bash scripts/generate_ref.sh~~
+
+.. code-block:: bash
 
 	# make sure all reference fasta files are indexed: 
 	samtools faidx <file.fasta|file.fa>
