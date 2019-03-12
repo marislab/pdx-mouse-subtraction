@@ -4,14 +4,14 @@
 PDX Mouse Subtraction Pipeline
 ******************************
 
-:authors: Oliver Hampton, Chase Miller, Liu Xi, Maria Cardenas
+:authors: Oliver Hampton, Chase Miller, Liu Xi, Maria Cardenas and Komal Rathi
 :contact: Komal Rathi (rathik@email.chop.edu)
 :organization: DBHi, CHOP
 :status: Completed
 :date: |date|
 
 .. meta::
-   :keywords: pdx, mouse, 2016
+   :keywords: pdx, mouse, 2019
    :description: pdx mouse subtraction pipeline.
 
 Introduction
@@ -127,19 +127,28 @@ GATK
 	bgzip dbsnp_138.b37.vcf
 	tabix -p vcf dbsnp_138.b37.vcf.gz
 
+Download reference files:
+=========================
+
+.. code-block:: bash
+	
+	# run this code to create output directories and download reference data
+	bash mkdirs.sh
+
 Prepare reference fasta and gtf:
 ================================
 
 .. code-block:: bash
 
-	# Code to prepare reference fasta and gtf (this might be inaccurate because I got the reference files from BCM):
-	bash scripts/generate_ref.sh
+	~~# Code to prepare reference fasta and gtf (this might be inaccurate because I got the reference files from BCM):~~
+	~~bash scripts/generate_ref.sh~~
 
 	# make sure all reference fasta files are indexed: 
 	samtools faidx <file.fasta|file.fa>
 
 	# make sure the fasta reference used by bwa is indexed:
 	bwa index protein_coding_canonical.T_chr.fa
+
 
 BCM-specific scripts and software:
 ==================================
