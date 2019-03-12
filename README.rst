@@ -138,8 +138,8 @@ Download reference files:
 Prepare reference fasta and gtf:
 ================================
 
-	~~# Code to prepare reference fasta and gtf (this might be inaccurate because I got the reference files from BCM):~~
-	~~bash scripts/generate_ref.sh~~
+	|ss| # Code to prepare reference fasta and gtf (this might be inaccurate because I got the reference files from BCM): |se|
+	|ss| bash scripts/generate_ref.sh |se|
 
 .. code-block:: bash
 
@@ -194,4 +194,10 @@ Steps to run the DNA-pipeline:
 	cd dna-pipeline && bash run_dna.sh
 
 
+.. |ss| raw:: html
 
+   <strike>
+
+.. |se| raw:: html
+
+   </strike>
